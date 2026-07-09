@@ -227,8 +227,7 @@ Il faut aussi distinguer la création d’un nouvel objet et la reconstitution d
 * **Créer un nouvel objet** demande de générer une nouvelle identité et de vérifier les règles de départ (toute violation d'invariant finit en exception).
 * **Recharger un objet depuis la base** consiste plutôt à reconstruire un état déjà existant (une violation d'invariant dans ce cas nécessite de réparer l'objet sinon il y a perte de donnée). 
 
-**En résumé, une Fabrique sert à centraliser et sécuriser la création d’objets métier complexes, afin d’éviter que cette logique soit dispersée dans l’application.
-**
+**En résumé, une Fabrique sert à centraliser et sécuriser la création d’objets métier complexes, afin d’éviter que cette logique soit dispersée dans l’application.**
 
 ### Les Entrepôts (repository)
 
