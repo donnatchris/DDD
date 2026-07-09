@@ -1,5 +1,4 @@
 # Domain Driven Design
-Conception dirigée par le modèle
 
 ## Concepts de base
 
@@ -37,3 +36,19 @@ qu’en est-il du nom des variables et de la structure générale du code ? Donn
 haut et fort une version intégrale des faits ? Du code qui fonctionnellement fait ce qu’il
 y a à faire, n’exprime pas forcément ce qu’il y a à exprimer. Ecrire un modèle en code
 est très difficile.
+
+---
+
+## Conception dirigée par le modèle
+
+La programmation orientée objet convient bien à l’implémentation de modèle car ils
+sont tous deux basés sur le même paradigme. La programmation orientée objet prévoit
+des classes d’objets et leurs associations, des instances d’objets, et l’envoi de messages
+entre eux. Les langages de POO rendent possible la création de mappages directs entre
+les objets du modèle avec leurs relations, et leurs équivalents en programmation.
+
+Les langages procéduraux offrent un support limité de la conception dirigée par le
+Modèle. Ces langages ne proposent pas les briques nécessaires pour implémenter les
+composants-clés d’un modèle.
+
+### Les blocs de construction d’une conception orientée Modèle
