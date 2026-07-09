@@ -260,6 +260,6 @@ Il faut aussi distinguer **Fabrique** et **Entrepôt** :
 * l’**Entrepôt** retrouve et persiste des objets déjà existants.
 
 Même si un Entrepôt peut reconstruire un objet à partir des données stockées en base, ce n’est pas une création métier nouvelle : c’est une reconstitution d’un objet qui existait déjà.
-**
-En résumé, un Entrepôt permet de garder le domaine propre en isolant la logique d’accès aux données, tout en fournissant une interface simple pour récupérer, sauvegarder ou supprimer les objets métier importants.**
+
+**En résumé, un Entrepôt permet de garder le domaine propre en isolant la logique d’accès aux données, tout en fournissant une interface simple pour récupérer, sauvegarder ou supprimer les objets métier importants.**
 
