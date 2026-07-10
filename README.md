@@ -280,7 +280,20 @@ Une Contrainte représente une règle qui doit toujours être respectée. Elle e
 _Par exemple, une intervention clôturée ne peut plus être modifiée :_
 
 ```ts
-class Intervention { constructor( public status: 'draft' | 'done', public description: string, ) {} updateDescription(newDescription: string) { if (this.status === 'done') { throw new Error('Une intervention clôturée ne peut plus être modifiée.'); } this.description = newDescription; } }
+class Intervention {
+  constructor(
+    public status: 'draft' | 'done',
+    public description: string,
+  ) {}
+
+  updateDescription(newDescription: string) {
+    if (this.status === 'done') {
+      throw new Error('Une intervention clôturée ne peut plus être modifiée.');
+    }
+
+    this.description = newDescription;
+  }
+}
 ```
 
 ### Processus
