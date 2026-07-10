@@ -262,3 +262,83 @@ Même si un Entrepôt peut reconstruire un objet à partir des données stockée
 
 **En résumé, un Entrepôt permet de garder le domaine propre en isolant la logique d’accès aux données, tout en fournissant une interface simple pour récupérer, sauvegarder ou supprimer les objets métier importants.**
 
+
+---
+
+## Refactorer
+
+> En DDD, lorsqu’on améliore progressivement le modèle, on cherche à rendre explicites les concepts importants du domaine. Certains concepts sont d’abord implicites : ils existent dans les discussions, les règles métier ou les processus, mais ne sont pas encore représentés clairement dans le code.
+
+Les rendre explicites permet de clarifier le modèle, de mieux organiser le code et parfois de provoquer une véritable amélioration du design. Trois concepts sont particulièrement utiles à identifier : **Contrainte**, **Processus** et **Spécification**.
+
+### Contrainte
+
+Une **Contrainte** représente une règle qui doit toujours être respectée. Elle exprime souvent un invariant, c’est-à-dire une condition qui doit rester vraie quoi qu’il arrive. Par exemple, une étagère ne peut pas contenir plus de livres que sa capacité maximale. Plutôt que de cacher cette règle dans du code difficile à lire, on peut l’isoler dans une méthode ou un objet dédié pour la rendre claire et compréhensible.
+
+Une Contrainte représente une règle qui doit toujours être respectée. Elle exprime souvent un **invariant**, c’est-à-dire une condition qui doit rester vraie quoi qu’il arrive.
+
+_Par exemple, une intervention clôturée ne peut plus être modifiée :_
+
+```ts
+class Intervention { constructor( public status: 'draft' | 'done', public description: string, ) {} updateDescription(newDescription: string) { if (this.status === 'done') { throw new Error('Une intervention clôturée ne peut plus être modifiée.'); } this.description = newDescription; } }
+```
+
+### Processus
+
+Un **Processus** représente une action ou un enchaînement d’actions important dans le domaine. Si ce processus ne appartient pas naturellement à une Entité ou à un Objet-Valeur, on peut le placer dans un **Service de domaine**. Si plusieurs manières d’exécuter ce processus existent, on peut utiliser une **Stratégie** pour encapsuler l’algorithme choisi. Tous les processus n’ont pas besoin d’être modélisés explicitement : on le fait surtout lorsqu’ils sont importants dans le langage métier.
+
+Un Processus représente une action ou un enchaînement d’actions important dans le domaine. Si ce processus ne appartient pas naturellement à une **Entité** ou à un **Objet-Valeur**, on peut le placer dans un Service de domaine.
+
+_Par exemple, planifier une intervention peut nécessiter plusieurs objets : un client, un technicien et une date._
+
+```ts
+class PlanningService {
+  planifierIntervention(clientId: string, technicienId: string, date: Date) {
+    return new Intervention(
+      'draft',
+      `Intervention prévue pour le client ${clientId} avec le technicien ${technicienId} le ${date.toLocaleDateString()}`
+    );
+  }
+}
+```
+
+_Ici, le processus de planification ne appartient pas uniquement au client ni uniquement au technicien. Il est donc placé dans un service._
+
+### Spécification
+
+Une **Spécification** sert à vérifier si un objet respecte certains critères. Elle répond généralement à une question par oui ou non. Par exemple : “ce client est-il éligible à un crédit ?”, “cette intervention peut-elle être clôturée ?”, “cette facture peut-elle être validée ?”. Si la règle devient trop complexe pour rester dans l’Entité, on peut la déplacer dans une Spécification dédiée, qui reste dans la couche domaine.
+
+La Spécification est utile pour :
+
+* tester si un objet respecte une règle ;
+* sélectionner des objets dans une collection ;
+* vérifier une condition avant de créer ou modifier un objet ;
+* combiner plusieurs petites règles simples en une règle métier plus complète.
+
+_Par exemple, vérifier si une intervention peut être clôturée :_
+
+```ts
+class InterventionPeutEtreClotureeSpecification {
+  isSatisfiedBy(intervention: Intervention): boolean {
+    return intervention.status === 'draft'
+      && intervention.description.length > 0;
+  }
+}
+```
+
+_On peut ensuite l’utiliser ainsi :_
+
+```ts
+const specification = new InterventionPeutEtreClotureeSpecification();
+
+if (!specification.isSatisfiedBy(intervention)) {
+  throw new Error('Cette intervention ne peut pas être clôturée.');
+}
+```
+
+La Spécification permet d’isoler une règle de validation métier dans un objet dédié, au lieu de disperser cette logique dans plusieurs services ou controllers.
+
+**En résumé, ces trois concepts permettent de rendre le modèle plus clair : la Contrainte protège une règle qui doit toujours être vraie, le Processus représente une action métier importante, et la Spécification permet de vérifier si un objet satisfait des critères métier.**
+
+
+
