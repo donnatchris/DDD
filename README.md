@@ -354,4 +354,222 @@ La Spécification permet d’isoler une règle de validation métier dans un obj
 **En résumé, ces trois concepts permettent de rendre le modèle plus clair : la Contrainte protège une règle qui doit toujours être vraie, le Processus représente une action métier importante, et la Spécification permet de vérifier si un objet satisfait des critères métier.**
 
 
+---
+
+## Préserver l’intégrité du modèle
+
+Dans les gros projets, plusieurs équipes peuvent travailler en parallèle sur différentes parties du modèle métier. Le risque est que chaque équipe fasse évoluer sa partie sans toujours mesurer l’impact sur les autres, ce qui peut rendre le modèle incohérent.
+
+Un modèle doit rester cohérent : les termes doivent être clairs, les concepts ne doivent pas se contredire, et chaque partie du système doit être compréhensible. Cette cohérence interne est appelée **unification**.
+
+Dans l’idéal, une entreprise pourrait avoir un grand modèle unique pour tout son domaine. Mais dans la pratique, sur de gros projets, c’est souvent trop difficile à maintenir : trop d’équipes, trop de besoins différents, trop de coordination nécessaire.
+
+La solution n’est donc pas forcément de garder un seul énorme modèle, mais plutôt de découper le domaine en plusieurs modèles plus petits, chacun avec une frontière claire.
+
+Chaque modèle peut alors évoluer de manière plus indépendante, à condition que les liens entre les modèles soient bien définis. Ces liens doivent reposer sur des contrats clairs pour éviter les malentendus et préserver l’intégrité globale du système.
+
+En résumé, préserver l’intégrité du modèle consiste à éviter qu’un gros modèle devienne confus ou contradictoire, en découpant le domaine en modèles cohérents, bien délimités et correctement reliés entre eux.
+
+### Contexte borné
+
+> Un **Contexte borné** est une frontière claire à l’intérieur de laquelle un modèle métier a un sens précis et reste cohérent.
+
+Dans un petit projet, on peut souvent travailler avec un seul modèle. Mais dans une grosse application, plusieurs parties du système peuvent utiliser des concepts similaires avec des sens différents. Si on mélange ces modèles, le code devient confus, fragile et difficile à maintenir.
+
+**Le Contexte borné ** sert donc à définir où un modèle s’applique, avec son propre vocabulaire, ses propres règles et ses propres responsabilités. À l’intérieur de cette frontière, les termes doivent être cohérents et compris de la même manière par l’équipe.
+
+Un Contexte borné peut correspondre à une partie de l’application, à une équipe, à une base de code, à un module métier important ou même à un schéma de base de données. L’objectif est que chaque contexte puisse évoluer sans casser les autres.
+
+Il ne faut pas confondre **Contexte borné** et **Module**. Le Contexte borné définit le périmètre global d’un modèle. Les Modules servent ensuite à organiser les éléments à l’intérieur de ce modèle.
+
+_Par exemple, dans une application e-commerce, on pourrait avoir plusieurs contextes bornés :_
+
+_* un contexte **Boutique en ligne** pour les clients, les produits, le panier et les commandes ;
+* un contexte **Reporting** pour les statistiques, les ventes et les analyses ;
+* un contexte **Expédition** pour la préparation et l’envoi des commandes._
+
+Ces contextes peuvent utiliser certaines données communes, comme les produits ou les clients, mais ils ne les voient pas forcément de la même manière. Le reporting n’a pas besoin du même modèle métier que la boutique en ligne, et l’expédition n’a pas besoin de connaître toute la logique commerciale.
+
+Chaque contexte doit donc avoir son propre modèle, et les échanges entre contextes doivent passer par des interfaces ou des messages bien définis.
+
+**En résumé, un Contexte borné permet de découper un grand domaine en modèles plus petits, cohérents et indépendants, afin d’éviter qu’un seul modèle global devienne trop confus ou impossible à maintenir.**
+
+### Intégration Continue
+
+> L’**Intégration continue** sert à maintenir un **Contexte borné** cohérent lorsque plusieurs développeurs travaillent sur le même modèle.
+
+Même dans une petite équipe, le modèle peut se fragmenter : chacun peut comprendre une règle différemment, dupliquer du code, ajouter une fonctionnalité au mauvais endroit ou modifier une partie du modèle sans voir l’impact sur le reste.
+
+Comme le modèle évolue avec la compréhension du domaine, les nouveaux concepts doivent être intégrés proprement au modèle existant et au code. L’intégration continue permet de vérifier régulièrement que tout reste cohérent.
+
+Concrètement, cela signifie :
+
+* **fusionner le code souvent**, idéalement tous les jours ;
+* **compiler automatiquement** le projet ;
+* **exécuter des tests** automatisés ;
+* **détecter rapidement les erreurs** ou incohérences ;
+* **corriger tôt**, avant que les problèmes ne deviennent trop coûteux.
+
+**L’intégration continue ne sert pas seulement à vérifier que le code fonctionne techniquement. Dans une démarche DDD, elle aide aussi à préserver l’unité du modèle dans un même Contexte borné. Elle s’applique donc surtout à l’intérieur d’un Contexte borné, et non à la gestion des relations entre plusieurs Contextes bornés.**
+
+### Carte de Contexte
+
+> Une **Carte de Contexte** est un document ou un schéma qui montre les différents **Contextes bornés** d’une application et les relations entre eux.
+
+Dans une application d’entreprise, il existe souvent plusieurs modèles métier, chacun avec son propre Contexte borné. Chaque équipe peut travailler sur son contexte, mais tout le monde doit comprendre comment ces contextes s’articulent dans le système global.
+
+La Carte de Contexte sert donc à donner une vue d’ensemble : elle indique les limites de chaque contexte, leurs noms, leurs responsabilités et les liens qui existent entre eux.
+
+Elle permet d’éviter les chevauchements, les malentendus et les problèmes d’intégration. Si les relations entre contextes ne sont pas clairement définies, le système risque de mal fonctionner lorsqu’on assemble toutes les parties.
+
+Chaque Contexte borné doit avoir un nom clair, intégré au langage commun du projet. On peut ensuite organiser le code et les modules en respectant ces frontières.
+
+La Carte de Contexte peut aussi montrer le type de relation entre les contextes, par exemple :
+
+* **Noyau partagé** : deux contextes partagent une partie commune du modèle ;
+* **Client-Fournisseur** : un contexte dépend d’un autre pour obtenir des données ou des services ;
+* **Chemins séparés** : deux contextes évoluent indépendamment ;
+* **Service hôte ouvert** : un contexte expose une interface claire aux autres ;
+* **Couche anticorruption** : un contexte protège son modèle face à un système externe ou ancien.
+
+**En résumé, la Carte de Contexte permet de visualiser les grands blocs métier du système, leurs frontières et leurs relations, afin de garder une architecture claire et cohérente.**
+
+### Noyau Partagé
+
+> Le **Noyau partagé** est une partie du modèle, du code ou de la base de données que plusieurs équipes ou plusieurs **Contextes bornés** acceptent de partager.
+
+Il est utile lorsque deux contextes doivent rester séparés, mais qu’ils ont quand même besoin de certains concepts communs. Au lieu de dupliquer ces concepts dans chaque contexte, on définit une partie commune officielle : le noyau partagé.
+
+Ce noyau doit être petit, clair et stable. Comme il est utilisé par plusieurs équipes, il ne doit pas être modifié librement sans concertation. Chaque changement peut avoir un impact sur les autres contextes.
+
+Le **Noyau partagé** permet d’éviter les doublons et de conserver un vocabulaire commun sur certains concepts importants. Mais il demande de la discipline : les équipes doivent communiquer, intégrer régulièrement leurs changements et tester le noyau partagé à chaque modification.
+
+En pratique, il faut :
+
+* définir précisément ce qui fait partie du noyau partagé ;
+* éviter d’y mettre trop de choses ;
+* prévenir les autres équipes avant de le modifier ;
+* fusionner régulièrement les changements ;
+* exécuter les tests des équipes concernées.
+
+**En résumé, le Noyau partagé permet à plusieurs contextes de partager une partie commune du modèle, tout en gardant leur indépendance sur le reste.**
+
+### Client-Fournisseur
+
+> Le pattern **Client-Fournisseur** décrit la relation entre deux **Contextes bornés** lorsque l’un dépend fortement de l’autre.
+
+Le **fournisseur** produit des données, des services ou une interface dont le **client** a besoin pour fonctionner. Les deux contextes restent séparés, avec leurs propres modèles, mais ils doivent se coordonner parce que les décisions du fournisseur peuvent impacter le client.
+
+_Par exemple, dans une application e-commerce, le contexte **Boutique en ligne** enregistre les commandes, les clients et les produits. Le contexte **Reporting**, lui, a besoin de ces données pour produire des analyses. La boutique en ligne joue donc le rôle de fournisseur, et le reporting celui de client._
+
+Dans ce type de relation, il ne faut pas forcément créer un modèle commun ou un noyau partagé. Les deux contextes peuvent avoir des objectifs, des technologies et des modèles différents. Ce qui compte, c’est de définir clairement ce que le fournisseur doit exposer au client.
+
+Les équipes doivent donc se coordonner comme dans une vraie relation client-fournisseur :
+
+* le client exprime ses besoins ;
+* le fournisseur décide comment et quand les intégrer ;
+* les engagements sont discutés et planifiés ;
+* l’interface entre les deux systèmes est clairement définie ;
+* des tests automatisés vérifient que le fournisseur respecte bien ce que le client attend.
+
+Ce pattern fonctionne bien lorsque les deux équipes peuvent se coordonner correctement, idéalement avec un management commun ou une organisation claire.
+
+**En résumé, le pattern Client-Fournisseur permet à deux contextes séparés de collaborer lorsque l’un dépend des données ou services de l’autre, sans pour autant fusionner leurs modèles.**
+
+### Conformiste
+
+> Le pattern **Conformiste** s’applique quand un contexte client dépend d’un contexte fournisseur, mais que le fournisseur ne s’adapte pas vraiment aux besoins du client.
+
+Dans une relation idéale **Client-Fournisseur**, le fournisseur écoute les besoins du client et fait évoluer son interface en conséquence. Mais dans la réalité, le fournisseur peut avoir ses propres priorités, ses propres délais, ou appartenir à une autre organisation. Le client ne peut donc pas compter sur lui pour obtenir les changements souhaités.
+
+Dans ce cas, l’équipe cliente a plusieurs options. Elle peut couper la relation et devenir totalement indépendante, mais ce n’est pas toujours possible ou rentable. Elle peut aussi protéger son modèle avec une couche de traduction, appelée **Couche anticorruption**, surtout si le modèle du fournisseur est mal adapté ou mal conçu.
+
+Mais si le modèle du fournisseur est correct, stable et utile, l’équipe cliente peut choisir de s’y conformer. Cela signifie qu’elle adopte le modèle du fournisseur tel quel, sans essayer de le modifier ni de le traduire complètement.
+
+Le client construit alors son propre système en acceptant les concepts, les règles et les structures imposés par le fournisseur. Il perd une partie de sa liberté de conception, mais gagne en simplicité d’intégration.
+
+Ce pattern ressemble au **Noyau partagé**, mais avec une différence importante : dans un Noyau partagé, les deux équipes peuvent faire évoluer la partie commune ensemble. Dans le pattern Conformiste, le client ne contrôle pas le modèle fournisseur. Il doit simplement s’y adapter.
+
+En résumé, le pattern **Conformiste** consiste à accepter et utiliser le modèle d’un fournisseur tel qu’il est, lorsque ce modèle est suffisamment bon et que le coût de s’en protéger ou de le remplacer serait trop élevé.
+
+### Couche Anticorruption
+
+> La **Couche anticorruption** sert à protéger notre modèle métier lorsqu’il doit communiquer avec un système externe, ancien ou mal adapté.
+
+Dans un projet, il arrive souvent qu’une nouvelle application doive échanger avec une application historique, une API externe ou une base de données déjà existante. Le problème est que ce système externe possède son propre modèle, son propre vocabulaire et ses propres contraintes. Si on l’utilise directement dans notre code, il risque de contaminer notre modèle et de le rendre confus.
+
+**La Couche anticorruption se place donc entre notre application et le système externe**. Elle agit comme un traducteur : côté application, elle parle le langage de notre domaine ; côté système externe, elle parle le langage technique ou métier du système distant.
+
+Son objectif est de garder notre modèle propre, cohérent et indépendant. Notre domaine ne doit pas connaître les détails de l’ancien système, ses noms de champs, ses structures de données ou ses règles internes.
+
+_Par exemple, si notre application parle d’`Intervention`, mais que l’ancien logiciel utilise des notions comme `Ticket`, `CodeAffaire` ou `OperationLegacy`, la Couche anticorruption traduit ces concepts pour que notre domaine continue à manipuler ses propres objets._
+
+Elle peut être composée de plusieurs éléments :
+
+* un **Service**, vu depuis notre domaine comme une interface simple ;
+* une **Façade**, qui simplifie l’accès au système externe ;
+* un **Adaptateur**, qui convertit l’interface externe vers une interface compréhensible par notre application ;
+* un **Traducteur / Mapper**, qui transforme les données externes en objets de notre domaine, et inversement.
+
+Il ne faut pas créer un seul gros adaptateur qui fait tout. Il vaut mieux séparer les responsabilités, surtout si plusieurs services externes ou plusieurs types de données sont concernés.
+
+**En résumé, la Couche anticorruption permet d’intégrer un système externe sans laisser son modèle, son vocabulaire ou sa complexité polluer notre propre domaine.**
+
+### Chemins séparés
+
+> Le pattern **Chemins séparés** s’applique lorsqu’il est préférable de ne pas intégrer deux sous-systèmes, parce que cette intégration coûterait plus cher qu’elle ne rapporterait.
+
+Dans certains projets, on cherche à faire travailler plusieurs sous-systèmes ensemble. Mais cela demande souvent beaucoup d’efforts : coordination entre équipes, fusion de code, tests d’intégration, compromis sur les modèles, couches de traduction, adaptation aux contraintes de l’autre système, etc.
+
+Il faut donc se demander si l’intégration apporte une vraie valeur. **Si deux parties de l’application ont peu de choses en commun au niveau métier, il peut être plus simple et plus sain de les développer séparément.**
+
+Dans ce cas, chaque partie possède son propre **Contexte borné**, son propre modèle et éventuellement sa propre technologie. Pour l’utilisateur, l’ensemble peut quand même apparaître comme une seule application, par exemple grâce à une interface commune ou un portail qui donne accès aux différents modules.
+
+L’avantage principal est la liberté : chaque sous-système peut évoluer indépendamment, avec moins de dépendances et moins de compromis.
+
+Mais il faut être prudent : une fois que deux modèles ont évolué séparément, il devient très difficile de les réintégrer plus tard. Il faut donc choisir les Chemins séparés seulement si l’on est assez sûr que l’intégration profonde n’est pas nécessaire.
+
+**En résumé, les Chemins séparés consistent à accepter que deux parties du système évoluent indépendamment, lorsqu’elles n’ont pas assez de liens métier pour justifier une intégration forte.**
+
+### Service Hôte Ouvert
+
+> Le **Service Hôte ouvert** s’applique lorsqu’un sous-système doit être utilisé par plusieurs autres sous-systèmes.
+
+Sans ce pattern, chaque client risque de créer sa propre couche de traduction pour communiquer avec ce sous-système. Cela produit beaucoup de code en double, plus de maintenance, et davantage de risques à chaque changement.
+
+L’idée est donc de transformer le sous-système en **fournisseur de services**. Il expose une interface claire, stable et partagée, que les autres systèmes peuvent utiliser directement.
+
+Cette interface peut prendre la forme d’une API, d’un protocole, de messages ou de services applicatifs. Elle doit être suffisamment générale pour répondre aux besoins communs des différents clients, sans devenir trop complexe.
+
+Si un client a un besoin très spécifique, il vaut mieux créer un adaptateur ou une traduction particulière pour ce cas précis, plutôt que de compliquer l’interface commune pour tout le monde.
+
+**En résumé, le Service Hôte ouvert permet à un sous-système d’exposer une interface publique claire et réutilisable, afin de faciliter son intégration avec plusieurs autres systèmes.**
+
+### Distillation
+
+> La **Distillation** consiste à identifier ce qui constitue le cœur réel du domaine métier, puis à le séparer du reste du modèle.
+
+Dans un gros système, le modèle peut devenir très vaste, même après plusieurs améliorations. Il contient souvent beaucoup d’éléments nécessaires, mais tous n’ont pas la même importance. Certains représentent la vraie valeur métier de l’application, tandis que d’autres sont plus génériques ou secondaires.
+
+L’objectif est donc de distinguer le **Cœur de Domaine** des **Sous-domaines génériques**.
+
+Le **Cœur de Domaine** correspond à la partie la plus importante, la plus spécifique et la plus stratégique du système. C’est là que se trouve la vraie valeur métier. C’est aussi là qu’il faut concentrer les meilleurs efforts de conception, de modélisation et de développement.
+
+Les **Sous-domaines génériques**, eux, sont utiles au fonctionnement de l’application, mais ils ne représentent pas son avantage principal. Ils peuvent parfois être isolés dans des modules séparés, confiés à d’autres équipes, remplacés par des solutions existantes ou développés avec moins de priorité.
+
+_Par exemple, dans un système de surveillance du trafic aérien, la notion de route peut sembler importante. Mais le vrai cœur du domaine est plutôt le calcul de trajectoires d’avion et la détection des risques de collision. La route devient alors un sous-domaine plus générique, tandis que la trajectoire et l’alerte collision constituent le cœur métier._
+
+Le Cœur de Domaine dépend toujours du point de vue de l’application. Un concept peut être central dans un système, mais secondaire dans un autre.
+
+La **Distillation** aide donc à ne pas mettre tous les éléments du modèle au même niveau. Elle permet de concentrer l’énergie sur ce qui fait réellement la valeur du projet, tout en isolant les parties plus génériques.
+
+Pour les Sous-domaines génériques, plusieurs choix sont possibles :
+
+* utiliser une solution du commerce ;
+* sous-traiter le développement ;
+* s’appuyer sur un modèle existant ;
+* développer une solution maison si l’intégration le justifie.
+
+**En résumé, la Distillation sert à faire ressortir le Cœur de Domaine, à le protéger et à lui donner la priorité, afin que l’essentiel du métier ne soit pas noyé dans des détails techniques ou des fonctionnalités secondaires.**
+
 
