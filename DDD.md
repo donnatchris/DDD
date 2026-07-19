@@ -288,6 +288,31 @@ Dans une application complexe, les objets du domaine peuvent avoir beaucoup de r
 
 L’objectif des agrégats est donc de simplifier ces relations et de protéger les règles métier importantes.
 
+#### La Racine d'Agrégat
+
+Un agrégat possède une **racine**, appelée **racine d’agrégat**. Cette racine est une Entité, et c’est le seul objet accessible depuis l’extérieur. Les objets internes de l’agrégat ne doivent pas être modifiés directement par le reste de l’application.
+
+Par exemple, si `Client` est la racine d’un agrégat, les autres objets comme `Adresse`, `Contact` ou `InformationsFacturation` peuvent être internes à cet agrégat. Le reste de l’application ne modifie pas directement l’adresse du client : il demande au `Client` de le faire.
+
+Cela permet à la racine de contrôler les changements et de garantir les règles métier, aussi appelées **invariants**.
+
+#### Les Invarients
+
+Un **invariant** est une règle qui doit toujours rester vraie. Par exemple :
+
+* une intervention clôturée ne peut plus être modifiée ;
+* une facture ne peut pas être validée sans client ;
+* un client doit toujours avoir au moins une adresse principale ;
+* une ligne de facture ne peut pas avoir un montant négatif.
+
+Grâce à l’agrégat, ces règles sont centralisées et protégées. Les objets extérieurs ne peuvent pas modifier n’importe quoi n’importe comment.
+
+En base de données, on peut stocker plusieurs objets liés, mais dans le modèle métier, on ne devrait récupérer et manipuler directement que la racine de l’agrégat. Les objets internes sont accessibles à travers elle.
+
+**En résumé, un agrégat sert à regrouper des Entités et des Objets Valeurs autour d’une racine, afin de contrôler les modifications, protéger les règles métier et réduire la complexité des relations entre objets.**
+
+_Exemple : `Client` peut être la racine qui accède à `Adresse`et à `InfosContact`._
+
 _Exemple avec `Client` qui est la **racine d’agrégat**. L’extérieur ne modifie pas directement la liste des adresses : il passe toujours par les méthodes de `Client`._
 ```ts
 class Adresse {
@@ -326,31 +351,6 @@ client.ajouterAdresse(
 );
 ```
 
-#### La Racine d'Agrégat
-
-Un agrégat possède une **racine**, appelée **racine d’agrégat**. Cette racine est une Entité, et c’est le seul objet accessible depuis l’extérieur. Les objets internes de l’agrégat ne doivent pas être modifiés directement par le reste de l’application.
-
-Par exemple, si `Client` est la racine d’un agrégat, les autres objets comme `Adresse`, `Contact` ou `InformationsFacturation` peuvent être internes à cet agrégat. Le reste de l’application ne modifie pas directement l’adresse du client : il demande au `Client` de le faire.
-
-Cela permet à la racine de contrôler les changements et de garantir les règles métier, aussi appelées **invariants**.
-
-#### Les Invarients
-
-Un **invariant** est une règle qui doit toujours rester vraie. Par exemple :
-
-* une intervention clôturée ne peut plus être modifiée ;
-* une facture ne peut pas être validée sans client ;
-* un client doit toujours avoir au moins une adresse principale ;
-* une ligne de facture ne peut pas avoir un montant négatif.
-
-Grâce à l’agrégat, ces règles sont centralisées et protégées. Les objets extérieurs ne peuvent pas modifier n’importe quoi n’importe comment.
-
-En base de données, on peut stocker plusieurs objets liés, mais dans le modèle métier, on ne devrait récupérer et manipuler directement que la racine de l’agrégat. Les objets internes sont accessibles à travers elle.
-
-**En résumé, un agrégat sert à regrouper des Entités et des Objets Valeurs autour d’une racine, afin de contrôler les modifications, protéger les règles métier et réduire la complexité des relations entre objets.**
-
-_Exemple : `Client` peut être la racine qui accède à `Adresse`et à `InfosContact`._
-
 ### Les Fabriques
 
 > En DDD, une **Fabrique** sert à créer des objets métier complexes, en particulier des Entités ou des Agrégats.
@@ -384,6 +384,55 @@ Il faut aussi distinguer la création d’un nouvel objet et la reconstitution d
 
 **En résumé, une Fabrique sert à centraliser et sécuriser la création d’objets métier complexes, afin d’éviter que cette logique soit dispersée dans l’application.**
 
+_La fabrique génère l’identité, crée les lignes et garantit que la commande est valide dès sa création._
+```ts
+class Commande {
+  private constructor(
+    public readonly id: string,
+    public readonly clientId: string,
+    public readonly lignes: LigneCommande[],
+  ) {}
+}
+
+class LigneCommande {
+  constructor(
+    public readonly produitId: string,
+    public readonly quantite: number,
+  ) {
+    if (quantite <= 0) {
+      throw new Error("La quantité doit être positive");
+    }
+  }
+}
+
+class CommandeFactory {
+  static creer(
+    clientId: string,
+    produits: Array<{ produitId: string; quantite: number }>,
+  ): Commande {
+    if (produits.length === 0) {
+      throw new Error("Une commande doit contenir au moins un produit");
+    }
+
+    const lignes = produits.map(
+      produit => new LigneCommande(produit.produitId, produit.quantite),
+    );
+
+    return new Commande(
+      crypto.randomUUID(),
+      clientId,
+      lignes,
+    );
+  }
+}
+```
+```ts
+const commande = CommandeFactory.creer("client-1", [
+  { produitId: "produit-1", quantite: 2 },
+  { produitId: "produit-2", quantite: 1 },
+]);
+```
+
 ### Les Entrepôts (repository)
 
 > En DDD, un **Entrepôt** — ou **Repository** — sert à retrouver, stocker et supprimer des objets du domaine déjà existants, sans exposer les détails techniques de la base de données.
@@ -416,6 +465,70 @@ Il faut aussi distinguer **Fabrique** et **Entrepôt** :
 Même si un Entrepôt peut reconstruire un objet à partir des données stockées en base, ce n’est pas une création métier nouvelle : c’est une reconstitution d’un objet qui existait déjà.
 
 **En résumé, un Entrepôt permet de garder le domaine propre en isolant la logique d’accès aux données, tout en fournissant une interface simple pour récupérer, sauvegarder ou supprimer les objets métier importants.**
+
+_Voici un exemple simple avec une interface dans l’application et une implémentation technique séparée._
+```ts
+// Domaine : racine d’agrégat
+class Intervention {
+  constructor(
+    public readonly id: string,
+    public statut: "planifiée" | "terminée",
+  ) {}
+
+  terminer(): void {
+    this.statut = "terminée";
+  }
+}
+```
+```ts
+// Port sortant : contrat du Repository
+interface InterventionRepository {
+  findById(id: string): Promise<Intervention | null>;
+  save(intervention: Intervention): Promise<void>;
+  delete(id: string): Promise<void>;
+}
+```
+```ts
+// Adaptateur pour les tests
+class FakeInterventionRepository
+  implements InterventionRepository
+{
+  private interventions = new Map<string, Intervention>();
+
+  async findById(id: string): Promise<Intervention | null> {
+    return this.interventions.get(id) ?? null;
+  }
+
+  async save(intervention: Intervention): Promise<void> {
+    this.interventions.set(intervention.id, intervention);
+  }
+
+  async delete(id: string): Promise<void> {
+    this.interventions.delete(id);
+  }
+}
+```
+_Utilisation dans un cas d’usage :_
+_(Le cas d’usage dépend uniquement de l’interface `InterventionRepository`. Il ne sait pas si les données viennent de Prisma, PostgreSQL ou d’un fake en mémoire.)_
+```ts
+class TerminerIntervention {
+  constructor(
+    private readonly repository: InterventionRepository,
+  ) {}
+
+  async execute(id: string): Promise<void> {
+    const intervention = await this.repository.findById(id);
+
+    if (!intervention) {
+      throw new Error("Intervention introuvable");
+    }
+
+    intervention.terminer();
+
+    await this.repository.save(intervention);
+  }
+}
+```
 
 
 ---
