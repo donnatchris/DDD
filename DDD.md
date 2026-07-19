@@ -85,6 +85,26 @@ L'identité unique de chaque objet peut être crée de différentes manières:
 * Une autre solution est d’utiliser les attributs de
 l’objet pour créer l’ID
 
+```ts
+class Client {
+  constructor(
+    public readonly id: string,
+    public nom: string,
+    public email: string,
+  ) {}
+
+  equals(other: Client): boolean {
+    return this.id === other.id;
+  }
+}
+```
+```ts
+const client1 = new Client("123", "Alice", "alice@mail.com");
+const client2 = new Client("123", "Alice", "nouveau@mail.com");
+
+console.log(client1.equals(client2)); // true
+```
+
 ### Les Objets-Valeurs
 
 > Les Objets-Valeurs sont des objets métier définis uniquement par leurs valeurs, sans identité propre, généralement immuable, par exemple une `Adresse`, une `Période`, ou un `Montant`.
