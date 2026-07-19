@@ -101,6 +101,7 @@ class Client {
 ```ts
 const client1 = new Client("123", "Alice", "alice@mail.com");
 const client2 = new Client("123", "Alice", "nouveau@mail.com");
+// Les deux objets représentent le même client car ils ont la même identité, même si leur état diffère.
 
 console.log(client1.equals(client2)); // true
 ```
