@@ -254,11 +254,10 @@ src/
         ├── Facture.ts
         ├── Montant.ts
         └── GenererFacture.ts
-
+```
 Par exemple, le module `interventions` ne devrait pas modifier directement les objets internes du module `clients`.
 
-Il pourrait utiliser une interface claire.
-```
+Il pourrait utiliser une interface claire:
 ```ts
 interface ClientProvider {
   existe(clientId: string): Promise<boolean>;
