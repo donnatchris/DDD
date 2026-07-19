@@ -1,5 +1,7 @@
 # Architecture logicielle
 
+_Avant de lire cet article, assurez-vous d'avoir lu [l'article sur le Domain Driven Design](/DDD.md) afin d'avoir les notons et concepts de base nécessaire à la compréhension._
+
 **L’architecture logicielle, c’est la manière dont une application est organisée : ses grandes parties, leurs responsabilités et la façon dont elles communiquent entre elles.**
 
 Elle sert à rendre le logiciel compréhensible, maintenable, testable et évolutif. En résumé, l’architecture logicielle est le plan de construction d’un logiciel.
