@@ -85,8 +85,18 @@ Les principaux problèmes de l’architecture **N-Tier** sont les suivants :
 * **Risque de “couche service fourre-tout”** : toute la logique est placée dans de gros services peu cohérents.
 * **Architecture parfois trop rigide** : même une petite fonctionnalité doit traverser toutes les couches.
 
-**Le principal défaut du N-Tier est qu’il sépare bien les aspects techniques, mais pas toujours les concepts métier.
-**
+> L’infiltration technique
+> 
+> L’un des risques fréquents dans une application est de laisser les détails techniques s’infiltrer dans le code métier.
+> Par exemple, le domaine ne devrait pas dépendre directement :
+> * d’un framework comme NestJS ou Spring ;
+> * d’un ORM comme Prisma ou Hibernate ;
+> * d’une base de données particulière ;
+> * d’une interface HTTP ;
+> * d’un service externe.
+> Cette infiltration, parfois appelée leaking, rend le métier difficile à comprendre, à tester et à faire évoluer.
+
+**Le principal défaut du N-Tier est qu’il sépare bien les aspects techniques, mais pas toujours les concepts métier.**
 
 Cette architecture reste adaptée à des applications simples, mais elle devient souvent moins efficace lorsque le domaine métier est complexe.
 
@@ -137,6 +147,21 @@ class PrismaUserRepository implements UserRepository {
 ```
 
 C’est l’un des principes centraux des architectures hexagonale, Clean Architecture et Onion Architecture.
+
+
+---
+
+## L'architecture Hexagonale - Ports and adapters architecture
+
+**L’architecture hexagonale, aussi appelée Ports and Adapters Architecture, a pour objectif principal de placer la logique métier au centre de l’application et de la protéger des dépendances techniques.**
+
+### Objectifs
+
+* **Se protéger de l'infiltration (leaking)** : empêcher les détails techniques de s’infiltrer dans le code métier
+* **Isoler le code métier de la technique (UI et data)**
+* **Construire l'application avant les problématiques techniques**
+* **Un seul layer: l'application**
+
 
 
 
