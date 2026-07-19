@@ -1,7 +1,5 @@
 # Architecture logicielle
 
-_Avant de lire cet article, assurez-vous d'avoir lu l'article sur le [Domain Driven Design](/DDD.md) afin d'avoir les notons et concepts de base nécessaire à la compréhension._
-
 **L’architecture logicielle, c’est la manière dont une application est organisée : ses grandes parties, leurs responsabilités et la façon dont elles communiquent entre elles.**
 
 Elle sert à rendre le logiciel compréhensible, maintenable, testable et évolutif. En résumé, l’architecture logicielle est le plan de construction d’un logiciel.
@@ -690,3 +688,561 @@ commande/
 ```
 
 Cette variante évite de créer une interface pour chaque cas d’utilisation lorsque cela n’apporte aucun bénéfice concret.
+
+---
+
+### Clean Architecture
+
+**La Clean Architecture organise l’application autour des règles métier et impose que les dépendances du code soient toujours dirigées vers les éléments les plus stables et les plus importants.**
+
+Elle a été formalisée par Robert C. Martin et reprend plusieurs idées déjà présentes dans l’architecture hexagonale et l’Onion Architecture.
+
+Son objectif principal est de rendre l’application :
+
+* indépendante du framework ;
+* indépendante de l’interface utilisateur ;
+* indépendante de la base de données ;
+* indépendante des services externes ;
+* facilement testable.
+
+La Clean Architecture représente généralement l’application sous la forme de plusieurs cercles concentriques.
+
+```mermaid
+flowchart TB
+    F[Frameworks et infrastructure]
+    A[Adaptateurs d'interface]
+    U[Cas d'utilisation]
+    E[Entités métier]
+
+    F --> A
+    A --> U
+    U --> E
+```
+
+Plus un élément est proche du centre, plus il contient des règles importantes et stables.
+
+On retrouve généralement les espaces suivants :
+
+* **les entités métier** ;
+* **les cas d’utilisation** ;
+* **les adaptateurs d’interface** ;
+* **les frameworks et l’infrastructure**.
+
+#### Les entités métier
+
+Les entités représentent les concepts et les règles métier les plus fondamentales de l’application.
+
+Elles peuvent contenir :
+
+* des entités ;
+* des objets-valeur ;
+* des agrégats ;
+* des services de domaine ;
+* des événements de domaine ;
+* des erreurs métier.
+
+Ces éléments ne doivent pas dépendre d’un contrôleur HTTP, d’un ORM, d’une base de données ou d’un framework.
+
+```ts
+export class Commande {
+  private statut: "BROUILLON" | "CONFIRMEE" = "BROUILLON";
+  private readonly lignes: LigneCommande[] = [];
+
+  ajouterLigne(ligne: LigneCommande): void {
+    if (this.statut !== "BROUILLON") {
+      throw new CommandeDejaConfirmeeError();
+    }
+
+    this.lignes.push(ligne);
+  }
+
+  confirmer(): void {
+    if (this.lignes.length === 0) {
+      throw new CommandeVideError();
+    }
+
+    this.statut = "CONFIRMEE";
+  }
+}
+```
+
+#### Les cas d’utilisation
+
+Les cas d’utilisation décrivent les actions que l’application permet d’effectuer.
+
+Ils orchestrent les objets du domaine afin de répondre à une intention précise :
+
+* créer une commande ;
+* confirmer une réservation ;
+* inscrire un candidat ;
+* envoyer une facture ;
+* annuler un paiement.
+
+```ts
+export class ConfirmerCommande {
+  constructor(
+    private readonly commandes: ICommandeRepository,
+    private readonly notifications: INotificationService,
+  ) {}
+
+  async execute(commandeId: CommandeId): Promise<void> {
+    const commande = await this.commandes.findById(commandeId);
+
+    if (!commande) {
+      throw new CommandeIntrouvableError();
+    }
+
+    commande.confirmer();
+
+    await this.commandes.save(commande);
+    await this.notifications.commandeConfirmee(commande);
+  }
+}
+```
+
+Le cas d’utilisation connaît les règles métier et les ports dont il a besoin, mais il ne connaît pas les technologies concrètes utilisées pour enregistrer la commande ou envoyer la notification.
+
+#### Les adaptateurs d’interface
+
+Les adaptateurs d’interface traduisent les données entre le format attendu par l’application et celui utilisé par le monde extérieur.
+
+Ils peuvent notamment contenir :
+
+* des contrôleurs HTTP ;
+* des présentateurs ;
+* des mappers ;
+* des consommateurs de messages ;
+* des implémentations de repositories ;
+* des gateways vers des services externes.
+
+Par exemple, un contrôleur transforme une requête HTTP en données compréhensibles par un cas d’utilisation :
+
+```ts
+export class CommandeController {
+  constructor(
+    private readonly confirmerCommande: ConfirmerCommande,
+  ) {}
+
+  async confirmer(commandeId: string): Promise<void> {
+    await this.confirmerCommande.execute(
+      new CommandeId(commandeId),
+    );
+  }
+}
+```
+
+#### Les frameworks et l’infrastructure
+
+La couche la plus externe contient les détails techniques :
+
+* NestJS, Spring, Express ou Next.js ;
+* Prisma, Hibernate ou TypeORM ;
+* PostgreSQL, MongoDB ou Redis ;
+* Stripe, Resend ou une API externe ;
+* les fichiers de configuration ;
+* le démarrage de l’application.
+
+Ces éléments sont nécessaires au fonctionnement concret du logiciel, mais ils ne doivent pas dicter l’organisation du métier.
+
+#### La règle de dépendance
+
+Le principe central de la Clean Architecture est la **Dependency Rule** :
+
+> Les dépendances du code ne doivent pointer que vers l’intérieur.
+
+Cela signifie que :
+
+* le domaine ne connaît pas les cas d’utilisation ;
+* les cas d’utilisation peuvent connaître le domaine ;
+* les adaptateurs peuvent connaître les cas d’utilisation ;
+* l’infrastructure peut connaître les couches internes ;
+* les couches internes ne doivent pas connaître l’infrastructure.
+
+```mermaid
+flowchart LR
+    INFRA[Infrastructure] --> ADAPTERS[Adaptateurs]
+    ADAPTERS --> USECASES[Cas d'utilisation]
+    USECASES --> DOMAIN[Domaine]
+```
+
+Lorsqu’un cas d’utilisation a besoin d’une ressource externe, il dépend d’une abstraction placée dans une couche interne.
+
+```ts
+export interface ICommandeRepository {
+  findById(id: CommandeId): Promise<Commande | null>;
+  save(commande: Commande): Promise<void>;
+}
+```
+
+L’infrastructure fournit ensuite une implémentation concrète :
+
+```ts
+export class PrismaCommandeRepository
+  implements ICommandeRepository
+{
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async findById(id: CommandeId): Promise<Commande | null> {
+    const data = await this.prisma.commande.findUnique({
+      where: { id: id.value },
+    });
+
+    return data
+      ? CommandePersistenceMapper.toDomain(data)
+      : null;
+  }
+
+  async save(commande: Commande): Promise<void> {
+    await this.prisma.commande.upsert({
+      where: { id: commande.id.value },
+      create: CommandePersistenceMapper.toPersistence(commande),
+      update: CommandePersistenceMapper.toPersistence(commande),
+    });
+  }
+}
+```
+
+#### Exemple de structure
+
+```text
+src/
+├── modules/
+│   └── commande/
+│       ├── domain/
+│       │   ├── entities/
+│       │   ├── value-objects/
+│       │   ├── services/
+│       │   └── errors/
+│       │
+│       ├── application/
+│       │   ├── use-cases/
+│       │   ├── ports/
+│       │   └── dto/
+│       │
+│       ├── interface-adapters/
+│       │   ├── controllers/
+│       │   ├── presenters/
+│       │   └── mappers/
+│       │
+│       └── infrastructure/
+│           ├── persistence/
+│           ├── messaging/
+│           └── configuration/
+│
+└── main.ts
+```
+
+Cette structure est une possibilité, mais la Clean Architecture n’impose pas des noms de dossiers précis. Ce qui compte surtout est le respect de la règle de dépendance.
+
+#### Différence avec l’architecture hexagonale
+
+L’architecture hexagonale et la Clean Architecture sont très proches.
+
+Elles cherchent toutes les deux à :
+
+* placer le métier au centre ;
+* isoler les détails techniques ;
+* appliquer l’inversion de dépendance ;
+* rendre les composants externes remplaçables ;
+* faciliter les tests.
+
+La différence se trouve principalement dans leur manière de représenter et d’expliquer l’organisation :
+
+* l’architecture hexagonale insiste sur les **ports et les adaptateurs** ;
+* la Clean Architecture insiste sur les **couches concentriques** et la **règle de dépendance**.
+
+Dans un projet réel, les deux approches peuvent se mélanger sans contradiction. On peut par exemple organiser l’application avec les couches de la Clean Architecture tout en utilisant des ports et des adaptateurs.
+
+---
+
+### Slice Architecture
+
+**La Slice Architecture, généralement appelée Vertical Slice Architecture, organise l’application par fonctionnalité ou cas d’utilisation plutôt que par grandes couches techniques.**
+
+Dans une architecture organisée horizontalement, les fichiers sont souvent répartis par nature technique :
+
+```text
+src/
+├── controllers/
+├── services/
+├── repositories/
+├── dto/
+└── entities/
+```
+
+Pour comprendre ou modifier une fonctionnalité, il faut alors naviguer dans plusieurs dossiers éloignés.
+
+Avec une organisation en **tranches verticales**, tout ce qui concerne une fonctionnalité est regroupé au même endroit :
+
+```text
+src/
+├── commande/
+│   ├── creer-commande/
+│   ├── obtenir-commande/
+│   └── annuler-commande/
+│
+└── client/
+    ├── creer-client/
+    └── modifier-client/
+```
+
+Chaque tranche traverse les différentes responsabilités nécessaires à la réalisation d’un cas d’utilisation :
+
+* entrée HTTP ou message ;
+* validation ;
+* orchestration ;
+* logique métier ;
+* accès aux données ;
+* réponse.
+
+```mermaid
+flowchart LR
+    REQ[Requête]
+    VALIDATION[Validation]
+    HANDLER[Cas d'utilisation]
+    DOMAIN[Domaine]
+    DATA[Persistance]
+    RESPONSE[Réponse]
+
+    REQ --> VALIDATION
+    VALIDATION --> HANDLER
+    HANDLER --> DOMAIN
+    HANDLER --> DATA
+    HANDLER --> RESPONSE
+```
+
+L’objectif n’est pas de supprimer toute séparation des responsabilités, mais de rapprocher les éléments qui changent ensemble.
+
+#### Une tranche par fonctionnalité
+
+Une slice correspond généralement à une action précise de l’application :
+
+* créer une commande ;
+* consulter une commande ;
+* annuler une commande ;
+* inscrire un utilisateur ;
+* modifier un profil ;
+* envoyer une facture.
+
+Par exemple :
+
+```text
+commande/
+├── creer-commande/
+│   ├── CreateCommandeController.ts
+│   ├── CreateCommandeRequest.ts
+│   ├── CreateCommande.ts
+│   ├── CreateCommandeResponse.ts
+│   └── CreateCommande.spec.ts
+│
+├── obtenir-commande/
+│   ├── GetCommandeController.ts
+│   ├── GetCommande.ts
+│   ├── GetCommandeResponse.ts
+│   └── GetCommande.spec.ts
+│
+└── annuler-commande/
+    ├── AnnulerCommandeController.ts
+    ├── AnnulerCommande.ts
+    └── AnnulerCommande.spec.ts
+```
+
+La fonctionnalité peut ainsi être comprise, modifiée et testée sans parcourir toute l’application.
+
+#### Exemple d’une slice
+
+```ts
+export type CreateCommandeInput = {
+  clientId: string;
+  produitId: string;
+  quantite: number;
+};
+
+export type CreateCommandeOutput = {
+  commandeId: string;
+  total: number;
+};
+
+export class CreateCommande {
+  constructor(
+    private readonly commandes: ICommandeRepository,
+    private readonly produits: IProduitProvider,
+  ) {}
+
+  async execute(
+    input: CreateCommandeInput,
+  ): Promise<CreateCommandeOutput> {
+    const produit = await this.produits.findById(input.produitId);
+
+    if (!produit) {
+      throw new ProduitIntrouvableError();
+    }
+
+    const commande = Commande.create(
+      new ClientId(input.clientId),
+    );
+
+    const ligne = LigneCommande.create({
+      produitId: produit.id,
+      prixUnitaire: produit.prix,
+      quantite: new Quantite(input.quantite),
+    });
+
+    commande.ajouterLigne(ligne);
+
+    await this.commandes.save(commande);
+
+    return {
+      commandeId: commande.id.value,
+      total: commande.total.value,
+    };
+  }
+}
+```
+
+Le contrôleur associé reste proche du cas d’utilisation :
+
+```ts
+export class CreateCommandeController {
+  constructor(
+    private readonly createCommande: CreateCommande,
+  ) {}
+
+  async handle(
+    request: CreateCommandeRequest,
+  ): Promise<CreateCommandeResponse> {
+    return this.createCommande.execute({
+      clientId: request.clientId,
+      produitId: request.produitId,
+      quantite: request.quantite,
+    });
+  }
+}
+```
+
+#### Avantages
+
+La Vertical Slice Architecture permet notamment de :
+
+* regrouper le code qui évolue ensemble ;
+* réduire les déplacements entre de nombreux dossiers ;
+* rendre les fonctionnalités plus faciles à comprendre ;
+* limiter le risque de services génériques trop volumineux ;
+* faciliter la suppression ou la modification d’une fonctionnalité ;
+* permettre à chaque slice d’utiliser les abstractions réellement utiles ;
+* éviter d’imposer la même structure à tous les cas d’utilisation.
+
+Une fonctionnalité simple peut rester simple, tandis qu’une fonctionnalité complexe peut disposer de davantage d’objets, de règles et d’abstractions.
+
+#### Points de vigilance
+
+La Vertical Slice Architecture ne signifie pas que chaque fonctionnalité doit dupliquer tout le code.
+
+Les éléments véritablement partagés peuvent être placés dans des espaces communs :
+
+* objets métier partagés ;
+* utilitaires techniques ;
+* configuration ;
+* accès générique à certaines infrastructures ;
+* composants transversaux comme la journalisation.
+
+Il faut cependant éviter de créer trop rapidement un dossier `shared` contenant tout ce qui semble réutilisable. Deux morceaux de code qui se ressemblent aujourd’hui ne représentent pas forcément le même concept.
+
+Il faut également conserver des frontières claires entre les modules métier. Une slice ne devrait pas accéder directement aux détails internes d’une autre slice ou d’un autre module.
+
+#### Slice Architecture et CQRS
+
+La Vertical Slice Architecture est souvent associée au **CQRS**, car chaque commande ou requête peut constituer une tranche indépendante.
+
+On peut par exemple distinguer :
+
+```text
+commande/
+├── commands/
+│   ├── creer-commande/
+│   └── annuler-commande/
+│
+└── queries/
+    ├── obtenir-commande/
+    └── lister-commandes/
+```
+
+Une **commande** modifie l’état du système :
+
+```ts
+export class AnnulerCommande {
+  async execute(input: AnnulerCommandeInput): Promise<void> {
+    // Modification de l'état de la commande
+  }
+}
+```
+
+Une **requête** lit des données sans modifier l’état :
+
+```ts
+export class GetCommande {
+  async execute(id: string): Promise<CommandeView> {
+    // Lecture optimisée pour l'affichage
+  }
+}
+```
+
+L’utilisation de CQRS n’est cependant pas obligatoire. Une application peut être organisée en slices sans séparer formellement les commandes et les requêtes.
+
+#### Compatibilité avec la Clean Architecture et l’architecture hexagonale
+
+La Slice Architecture répond principalement à la question :
+
+> Comment organiser les fichiers et les fonctionnalités de l’application ?
+
+La Clean Architecture et l’architecture hexagonale répondent plutôt aux questions suivantes :
+
+> Dans quel sens les dépendances doivent-elles être orientées ?  
+> Comment protéger le métier des détails techniques ?
+
+Ces approches ne s’opposent donc pas.
+
+Une slice peut respecter les principes de l’architecture hexagonale :
+
+```text
+creer-commande/
+├── domain/
+│   └── Commande.ts
+├── application/
+│   ├── CreateCommande.ts
+│   └── ICommandeRepository.ts
+└── adapters/
+    ├── CreateCommandeController.ts
+    └── PrismaCommandeRepository.ts
+```
+
+Cependant, créer une mini-architecture complète dans chaque slice peut devenir excessif. Une organisation plus légère est souvent suffisante :
+
+```text
+commande/
+├── domain/
+│   ├── Commande.ts
+│   └── LigneCommande.ts
+│
+├── creer-commande/
+│   ├── CreateCommandeController.ts
+│   ├── CreateCommande.ts
+│   └── CreateCommande.spec.ts
+│
+├── annuler-commande/
+│   ├── AnnulerCommandeController.ts
+│   ├── AnnulerCommande.ts
+│   └── AnnulerCommande.spec.ts
+│
+└── infrastructure/
+    └── PrismaCommandeRepository.ts
+```
+
+Dans cette organisation :
+
+* le domaine est partagé par les différentes slices du module ;
+* chaque cas d’utilisation reste regroupé dans sa propre tranche ;
+* les détails techniques communs restent isolés ;
+* les dépendances continuent d’être orientées vers le métier.
+
+**La Vertical Slice Architecture ne remplace donc pas nécessairement la Clean Architecture ou l’architecture hexagonale. Elle peut être utilisée comme une manière plus fonctionnelle d’organiser le code tout en conservant leurs principes de dépendance.**
