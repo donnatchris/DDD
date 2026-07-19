@@ -101,9 +101,10 @@ class Client {
 ```ts
 const client1 = new Client("123", "Alice", "alice@mail.com");
 const client2 = new Client("123", "Alice", "nouveau@mail.com");
-// Les deux objets représentent le même client car ils ont la même identité, même si leur état diffère.
 
 console.log(client1.equals(client2)); // true
+
+// Les deux objets représentent le même client car ils ont la même identité, même si leur état diffère.
 ```
 
 ### Les Objets-Valeurs
@@ -121,6 +122,30 @@ une valeur différente pour l’objet, vous en créez tout simplement un autre. 
 
 Les Objets-Valeurs peuvent contenir d’autres Objets-Valeurs, ils peuvent même
 contenir des références à des Entités.
+
+```ts
+class Montant {
+  constructor(
+    public readonly valeur: number,
+    public readonly devise: string,
+  ) {}
+
+  equals(other: Montant): boolean {
+    return (
+      this.valeur === other.valeur &&
+      this.devise === other.devise
+    );
+  }
+}
+```
+```ts
+const prix1 = new Montant(50, "EUR");
+const prix2 = new Montant(50, "EUR");
+
+console.log(prix1.equals(prix2)); // true
+
+// Les deux objets sont égaux car ils contiennent les mêmes valeurs. Ils n’ont pas d’identité propre.
+```
 
 ### Les Services
 
