@@ -276,24 +276,6 @@ On distingue:
 Exemple :
 
 ```mermaid
-flowchart LR
-    USER[Utilisateur]
-    CONTROLLER[Adaptateur entrant<br/>Contrôleur HTTP]
-    INPORT[Port entrant<br/>Créer une commande]
-    APP[Cœur de l'application<br/>Cas d'utilisation]
-    OUTPORT[Port sortant<br/>CommandeRepository]
-    REPOSITORY[Adaptateur sortant<br/>Repository Prisma]
-    DB[(Base de données)]
-
-    USER --> CONTROLLER
-    CONTROLLER --> INPORT
-    INPORT --> APP
-    APP --> OUTPORT
-    REPOSITORY --> OUTPORT
-    REPOSITORY --> DB
-```
-
-```mermaid
 flowchart TB
 
     subgraph ENTREE["Entrée"]
