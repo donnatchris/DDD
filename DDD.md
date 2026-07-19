@@ -119,8 +119,8 @@ Il ne faut pas créer un Service pour chaque petite opération. Si une règle ou
 
 **Il faut aussi distinguer plusieurs types de services :**
 
-* un **Service de domaine **contient une logique métier importante
-* un **Service d’application **orchestre un cas d’usage
+* un **Service de domaine** contient une logique métier importante
+* un **Service d’application** orchestre un cas d’usage
 * un **Service d’infrastructure** gère des détails techniques comme la base de données, les fichiers ou les APIs externes
 
 _Par exemple, dans une application de reporting, l’utilisateur choisit un rapport à générer. La couche application reçoit la demande, puis le domaine s’occupe de créer le rapport. Si le rapport doit être généré à partir d’un gabarit, on peut créer un Service de domaine chargé de retrouver le bon gabarit à partir de l’identifiant du rapport. Cette opération n'appartient ni vraiment à l’objet Rapport, ni vraiment à l’objet Gabarit : elle mérite donc d’être isolée dans un Service._
