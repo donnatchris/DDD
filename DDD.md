@@ -81,7 +81,7 @@ satisfaite, alors le système entier peut devenir corrompu.
 L'identité unique de chaque objet peut être crée de différentes manières:
 
 * clé primaire générée dans la base de donnée
-* ID unique créé par l'
+* ID unique créé par l'application
 * Une autre solution est d’utiliser les attributs de
 l’objet pour créer l’ID
 
