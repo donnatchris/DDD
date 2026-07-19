@@ -108,8 +108,8 @@ flowchart TD
 
 Le métier ne dépend plus directement de la base de données. Il définit seulement ce dont il a besoin à travers une interface.
 
-_Exemple :
-_
+Exemple :
+
 ```ts
 interface UserRepository {
   findById(id: string): Promise<User | null>;
@@ -124,7 +124,7 @@ class GetUser {
 }
 ```
 
-Puis l’infrastructure fournit une implémentation concrète :
+_Puis l’infrastructure fournit une implémentation concrète :_
 
 ```ts
 class PrismaUserRepository implements UserRepository {
