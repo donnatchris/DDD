@@ -100,7 +100,7 @@ Dans un N-Tier classique, la logique métier dépend souvent directement de l’
 Avec l’inversion de dépendance, on retourne cette relation :
 
 ```mermaid
-flowchart LR
+flowchart TD
     A[Présentation] --> B[Métier]
     C[Data] --> B
     C[Data] --> D[(Base de données)]
