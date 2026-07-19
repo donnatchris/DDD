@@ -85,17 +85,6 @@ Les principaux problèmes de l’architecture **N-Tier** sont les suivants :
 * **Risque de “couche service fourre-tout”** : toute la logique est placée dans de gros services peu cohérents.
 * **Architecture parfois trop rigide** : même une petite fonctionnalité doit traverser toutes les couches.
 
-> L’infiltration technique
-> 
-> L’un des risques fréquents dans une application est de laisser les détails techniques s’infiltrer dans le code métier.
-> Par exemple, le domaine ne devrait pas dépendre directement :
-> * d’un framework comme NestJS ou Spring ;
-> * d’un ORM comme Prisma ou Hibernate ;
-> * d’une base de données particulière ;
-> * d’une interface HTTP ;
-> * d’un service externe.
-> Cette infiltration, parfois appelée leaking, rend le métier difficile à comprendre, à tester et à faire évoluer.
-
 **Le principal défaut du N-Tier est qu’il sépare bien les aspects techniques, mais pas toujours les concepts métier.**
 
 Cette architecture reste adaptée à des applications simples, mais elle devient souvent moins efficace lorsque le domaine métier est complexe.
@@ -157,13 +146,95 @@ C’est l’un des principes centraux des architectures hexagonale, Clean Archit
 
 ### Objectifs
 
-* **Se protéger de l'infiltration (leaking)** : empêcher les détails techniques de s’infiltrer dans le code métier
+* **Se protéger de l'infiltration (leaking)**
 * **Isoler le code métier de la technique (UI et data)**
 * **Construire l'application avant les problématiques techniques**
 * **Un seul layer: l'application**
 
+#### L'infiltration technique (ou leaking)
 
+L’un des risques fréquents dans une application est de laisser les détails techniques s’infiltrer dans le code métier.
+Cette **infiltration**, parfois appelée **leaking**, rend le métier difficile à comprendre, à tester et à faire évoluer.
 
+> Par exemple, le domaine ne devrait pas dépendre directement :
+> * d’un framework comme NestJS ou Spring ;
+> * d’un ORM comme Prisma ou Hibernate ;
+> * d’une base de données particulière ;
+> * d’une interface HTTP ;
+> * d’un service externe.
 
+#### Isoler le code métier
+
+**Le code métier constitue le cœur de l’application. Il contient les règles, les cas d’utilisation et les comportements propres au domaine.**
+
+Les éléments techniques, comme l’interface utilisateur, la base de données ou les API externes, sont placés autour de ce cœur.
+
+> Le métier ne connaît donc pas directement :
+>
+> * l’interface graphique ;
+> * les contrôleurs HTTP ;
+> * la base de données ;
+> * les bibliothèques techniques ;
+> * les services tiers.
+
+Il communique avec l’extérieur à travers des **ports**, c’est-à-dire des interfaces définissant les échanges autorisés.
+
+Les technologies concrètes viennent ensuite se connecter à ces ports grâce à des **adaptateurs**.
+
+#### Construire l’application avant les problématiques techniques
+
+**L’architecture hexagonale encourage à commencer par les besoins métier, avant de choisir les technologies.**
+
+On peut ainsi développer et tester les cas d’utilisation sans avoir encore décidé :
+
+* quelle base de données utiliser ;
+* quel framework web choisir ;
+* si l’application aura une interface web, mobile ou en ligne de commande ;
+* quel service externe sera utilisé.
+
+> Par exemple, on peut écrire un cas d’utilisation CréerUneCommande avant de choisir PostgreSQL, Prisma ou NestJS.
+
+Cela évite de construire l’application autour d’un framework ou d’une base de données. La technologie devient un détail remplaçable et non le centre de la conception.
+
+#### Un seul coeur: l'application
+
+**Dans l’architecture hexagonale, on ne raisonne pas principalement en couches techniques comme dans une architecture N-Tier. On distingue surtout deux espaces :
+* l’intérieur, qui contient l’application et le métier
+* l’extérieur, qui contient les technologies et les systèmes externes**
+
+Le cœur de l’application contient notamment :
+
+* les entités métier
+* les objets-valeur
+* les règles métier
+* les cas d’utilisation
+* les ports
+
+Autour de ce cœur se trouvent les adaptateurs :
+
+* contrôleurs HTTP
+* interface utilisateur
+* repository SQL
+* client d’API
+* système de messagerie
+* stockage de fichiers
+
+Les dépendances doivent toujours être orientées vers le cœur de l’application.
+
+Interface utilisateur
+        ↓
+Adaptateur entrant
+        ↓
+Port entrant
+        ↓
+Application / métier
+        ↓
+Port sortant
+        ↑
+Adaptateur sortant
+        ↑
+Base de données ou service externe
+
+**L’application définit donc ce dont elle a besoin, tandis que les technologies externes viennent s’adapter à elle.**
 
 
