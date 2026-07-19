@@ -293,4 +293,33 @@ flowchart LR
     REPOSITORY --> DB
 ```
 
+```mermaid
+flowchart TB
+
+    subgraph ENTREE["Entrée"]
+        direction LR
+        USER[Utilisateur]
+        CONTROLLER[Adaptateur entrant<br/>Contrôleur HTTP]
+        INPORT[Port entrant<br/>Créer une commande]
+
+        USER --> CONTROLLER --> INPORT
+    end
+
+    subgraph COEUR["Cœur de l'application"]
+        APP[Application / Métier<br/>Cas d'utilisation]
+    end
+
+    subgraph SORTIE["Sortie"]
+        direction LR
+        OUTPORT[Port sortant<br/>CommandeRepository]
+        REPOSITORY[Adaptateur sortant<br/>Repository Prisma]
+        DB[(Base de données)]
+
+        OUTPORT --> REPOSITORY --> DB
+    end
+
+    INPORT --> APP
+    APP --> OUTPORT
+```
+
 
