@@ -282,7 +282,7 @@ flowchart TB
         direction LR
         USER[Utilisateur]
         CONTROLLER[ADAPTATEUR ENTRANT<br/>Ex: Contrôleur HTTP]
-        INPORT[PORT ENTRANT<br/>Ex: Créer une commande]
+        INPORT[PORT ENTRANT<br/>Ex: Interface ICreateCommande]
 
         USER --> CONTROLLER --> INPORT
     end
@@ -293,7 +293,7 @@ flowchart TB
 
     subgraph SORTIE["Sortie"]
         direction LR
-        OUTPORT[PORT SORTANT<br/>Ex: CommandeRepository]
+        OUTPORT[PORT SORTANT<br/>Ex: Interface ICommandeRepository]
         REPOSITORY[ADAPTATEUR SORTANT<br/>Ex: Repository Prisma]
         DB[(Base de données)]
 
