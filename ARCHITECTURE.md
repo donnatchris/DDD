@@ -243,4 +243,54 @@ flowchart TB
 
 **L’application définit donc ce dont elle a besoin, tandis que les technologies externes viennent s’adapter à elle.**
 
+### Les ports
+
+**Les ports sont les interfaces qui définissent comment le cœur de l’application peut être utilisé ou communiquer avec l’extérieur.**
+
+On distingue:
+* les **driving ports**
+* les **driven ports**.
+
+**Les driving ports sont les portes d'entrée** de l'application, qui permettent de demander un service à l'application:
+
+* pour configurer
+* pour utiliser
+* pour administrer
+
+**Les driven ports sont les ports qui indiquent à l'extérieur ce dont l'application à besoin pour fonctionner**:
+
+* pour obtenir des données
+* pour notifier des systèmes
+* pour contrôler d'autres éléments
+
+> Dans les langages sypés les ports sont souvent représentés par des **interfaces**.
+
+### Les adapters
+
+**Les adapters sont des implémentations techniques qui relient les ports à des technologies concrètes comme une API, une base de données ou une interface utilisateur.**
+
+On distingue:
+* les **driving adapters** qui utilisent les driving ports pour piloter l'application
+* les **driven ports** qui vont implémenter ce dont l'application a besoin
+
+Exemple :
+
+```mermaid
+flowchart LR
+    USER[Utilisateur]
+    CONTROLLER[Adaptateur entrant<br/>Contrôleur HTTP]
+    INPORT[Port entrant<br/>Créer une commande]
+    APP[Cœur de l'application<br/>Cas d'utilisation]
+    OUTPORT[Port sortant<br/>CommandeRepository]
+    REPOSITORY[Adaptateur sortant<br/>Repository Prisma]
+    DB[(Base de données)]
+
+    USER --> CONTROLLER
+    CONTROLLER --> INPORT
+    INPORT --> APP
+    APP --> OUTPORT
+    REPOSITORY --> OUTPORT
+    REPOSITORY --> DB
+```
+
 
