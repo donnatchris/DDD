@@ -223,6 +223,7 @@ Autour de ce cœur se trouvent les adaptateurs :
 
 Les dépendances doivent toujours être orientées vers le cœur de l’application.
 
+```mermaid
 flowchart TB
     UI[Interface utilisateur]
     AI[Adaptateur entrant]
@@ -238,6 +239,7 @@ flowchart TB
     APP --> PS
     EXT --> AS
     AS --> PS
+```
 
 **L’application définit donc ce dont elle a besoin, tandis que les technologies externes viennent s’adapter à elle.**
 
