@@ -281,7 +281,7 @@ flowchart TB
     subgraph ENTREE["Entrée"]
         direction LR
         USER[Utilisateur]
-        CONTROLLER[Adaptateur entrant<br/>Contrôleur HTTP]
+        CONTROLLER[**Adaptateur entrant**<br/>Ex: Contrôleur HTTP]
         INPORT[Port entrant<br/>Créer une commande]
 
         USER --> CONTROLLER --> INPORT
