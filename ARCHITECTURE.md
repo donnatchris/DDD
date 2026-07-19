@@ -198,9 +198,11 @@ Cela évite de construire l’application autour d’un framework ou d’une bas
 
 #### Un seul coeur: l'application
 
-**Dans l’architecture hexagonale, on ne raisonne pas principalement en couches techniques comme dans une architecture N-Tier. On distingue surtout deux espaces :
-* l’intérieur, qui contient l’application et le métier
-* l’extérieur, qui contient les technologies et les systèmes externes**
+**Dans l’architecture hexagonale, on ne raisonne pas principalement en couches techniques comme dans une architecture N-Tier.**
+
+On distingue surtout **deux espaces** :
+* l’**intérieur**, qui contient l’application et le métier
+* l’**extérieur**, qui contient les technologies et les systèmes externes
 
 Le cœur de l’application contient notamment :
 
@@ -221,19 +223,21 @@ Autour de ce cœur se trouvent les adaptateurs :
 
 Les dépendances doivent toujours être orientées vers le cœur de l’application.
 
-Interface utilisateur
-        ↓
-Adaptateur entrant
-        ↓
-Port entrant
-        ↓
-Application / métier
-        ↓
-Port sortant
-        ↑
-Adaptateur sortant
-        ↑
-Base de données ou service externe
+flowchart TB
+    UI[Interface utilisateur]
+    AI[Adaptateur entrant]
+    PI[Port entrant]
+    APP[Application / Métier]
+    PS[Port sortant]
+    AS[Adaptateur sortant]
+    EXT[Base de données ou service externe]
+
+    UI --> AI
+    AI --> PI
+    PI --> APP
+    APP --> PS
+    EXT --> AS
+    AS --> PS
 
 **L’application définit donc ce dont elle a besoin, tandis que les technologies externes viennent s’adapter à elle.**
 
