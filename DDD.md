@@ -1,6 +1,6 @@
 #  Domain Driven Design
 
-Cet article présente des notions de base nécesaires à la compréhension de l'article sur l'[architecture logicielle](/ARCHITECTURE.md).
+_Cet article présente des notions de base nécesaires à la compréhension de l'article sur l'[architecture logicielle](/ARCHITECTURE.md)._
 
 ## Concepts de base
 
