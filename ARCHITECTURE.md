@@ -281,20 +281,20 @@ flowchart TB
     subgraph ENTREE["Entrée"]
         direction LR
         USER[Utilisateur]
-        CONTROLLER[**Adaptateur entrant**<br/>Ex: Contrôleur HTTP]
-        INPORT[Port entrant<br/>Créer une commande]
+        CONTROLLER[ADAPTATEUR ENTRANT<br/>Ex: Contrôleur HTTP]
+        INPORT[PORT ENTRANT<br/>Ex: Créer une commande]
 
         USER --> CONTROLLER --> INPORT
     end
 
     subgraph COEUR["Cœur de l'application"]
-        APP[Application / Métier<br/>Cas d'utilisation]
+        APP[APPLICATION / METIER<br/>Cas d'utilisation]
     end
 
     subgraph SORTIE["Sortie"]
         direction LR
-        OUTPORT[Port sortant<br/>CommandeRepository]
-        REPOSITORY[Adaptateur sortant<br/>Repository Prisma]
+        OUTPORT[PORT SORTANT<br/>Ex: CommandeRepository]
+        REPOSITORY[ADAPTATEUR SORTANT<br/>Ex: Repository Prisma]
         DB[(Base de données)]
 
         OUTPORT --> REPOSITORY --> DB
