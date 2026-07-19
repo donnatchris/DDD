@@ -273,7 +273,9 @@ On distingue:
 * les **driving adapters** qui utilisent les driving ports pour piloter l'application
 * les **driven ports** qui vont implémenter ce dont l'application a besoin
 
-Exemple :
+### Schéma avec ports et adapteurs
+
+**Le cœur de l’application définit les ports ; les adaptateurs techniques implémentent ces ports.**
 
 ```mermaid
 flowchart TB
@@ -303,5 +305,337 @@ flowchart TB
     INPORT --> APP
     APP --> OUTPORT
 ```
+
+Les adaptateurs peuvent facilement être remplacés par des **fakes** ou des **mocks**, ce qui permet de tester l’application indépendamment de la base de données, du framework ou des services externes.
+
+### Exemple de structure en architecture hexagonale
+
+```text
+src/
+│
+├── modules/
+│   │
+│   ├── commande/
+│   │   │
+│   │   ├── domain/
+│   │   │   ├── entities/
+│   │   │   │   ├── Commande.ts
+│   │   │   │   └── LigneCommande.ts
+│   │   │   │
+│   │   │   ├── value-objects/
+│   │   │   │   ├── CommandeId.ts
+│   │   │   │   ├── Quantite.ts
+│   │   │   │   └── Montant.ts
+│   │   │   │
+│   │   │   ├── services/
+│   │   │   │   └── CalculPrixCommande.ts
+│   │   │   │
+│   │   │   └── errors/
+│   │   │       ├── CommandeVideError.ts
+│   │   │       └── QuantiteInvalideError.ts
+│   │   │
+│   │   ├── application/
+│   │   │   ├── ports/
+│   │   │   │   ├── in/
+│   │   │   │   │   ├── ICreateCommande.ts
+│   │   │   │   │   ├── IGetCommande.ts
+│   │   │   │   │   └── IAnnulerCommande.ts
+│   │   │   │   │
+│   │   │   │   └── out/
+│   │   │   │       ├── ICommandeRepository.ts
+│   │   │   │       ├── IProduitProvider.ts
+│   │   │   │       └── IPaymentService.ts
+│   │   │   │
+│   │   │   ├── use-cases/
+│   │   │   │   ├── CreateCommande.ts
+│   │   │   │   ├── GetCommande.ts
+│   │   │   │   └── AnnulerCommande.ts
+│   │   │   │
+│   │   │   └── dto/
+│   │   │       ├── CreateCommandeInput.ts
+│   │   │       └── CommandeOutput.ts
+│   │   │
+│   │   ├── adapters/
+│   │   │   ├── in/
+│   │   │   │   └── http/
+│   │   │   │       ├── CommandeController.ts
+│   │   │   │       ├── CreateCommandeRequest.ts
+│   │   │   │       └── CommandeHttpMapper.ts
+│   │   │   │
+│   │   │   └── out/
+│   │   │       ├── persistence/
+│   │   │       │   ├── PrismaCommandeRepository.ts
+│   │   │       │   └── CommandePersistenceMapper.ts
+│   │   │       │
+│   │   │       ├── payment/
+│   │   │       │   └── StripePaymentAdapter.ts
+│   │   │       │
+│   │   │       └── catalogue/
+│   │   │           └── CatalogueProduitAdapter.ts
+│   │   │
+│   │   └── commande.module.ts
+│   │
+│   ├── catalogue/
+│   │   ├── domain/
+│   │   ├── application/
+│   │   │   ├── ports/
+│   │   │   └── use-cases/
+│   │   ├── adapters/
+│   │   │   ├── in/
+│   │   │   └── out/
+│   │   └── catalogue.module.ts
+│   │
+│   └── client/
+│       ├── domain/
+│       ├── application/
+│       │   ├── ports/
+│       │   └── use-cases/
+│       ├── adapters/
+│       │   ├── in/
+│       │   └── out/
+│       └── client.module.ts
+│
+├── shared/
+│   ├── domain/
+│   │   ├── Entity.ts
+│   │   ├── ValueObject.ts
+│   │   └── DomainEvent.ts
+│   │
+│   └── infrastructure/
+│       ├── database/
+│       ├── logging/
+│       └── configuration/
+│
+└── main.ts
+```
+
+#### Rôle des dossiers du module `commande`
+
+##### `domain`
+
+```text
+domain/
+├── entities/
+├── value-objects/
+├── services/
+└── errors/
+```
+
+Par exemple, l’entité `Commande` peut vérifier qu’une commande possède au moins une ligne :
+
+```ts
+export class Commande {
+  private readonly lignes: LigneCommande[] = [];
+
+  ajouterLigne(ligne: LigneCommande): void {
+    this.lignes.push(ligne);
+  }
+
+  confirmer(): void {
+    if (this.lignes.length === 0) {
+      throw new CommandeVideError();
+    }
+  }
+}
+```
+
+##### `application`
+
+La couche application orchestre les cas d’utilisation. Elle utilise le domaine et définit les ports nécessaires pour communiquer avec l’extérieur.
+
+```text
+application/
+├── ports/
+│   ├── in/
+│   └── out/
+├── use-cases/
+└── dto/
+```
+
+##### `Ports entrants`
+
+Les ports entrants décrivent les actions proposées par l’application :
+
+```ts
+export interface ICreateCommande {
+  execute(input: CreateCommandeInput): Promise<CommandeOutput>;
+}
+```
+
+Le cas d’utilisation implémente ce port :
+
+```ts
+export class CreateCommande implements ICreateCommande {
+  constructor(
+    private readonly commandes: ICommandeRepository,
+    private readonly produits: IProduitProvider,
+  ) {}
+
+  async execute(input: CreateCommandeInput): Promise<CommandeOutput> {
+    const produit = await this.produits.findById(input.produitId);
+
+    const commande = Commande.create(input.clientId);
+    commande.ajouterProduit(produit, input.quantite);
+
+    await this.commandes.save(commande);
+
+    return {
+      id: commande.id.value,
+      total: commande.total.value,
+    };
+  }
+}
+```
+
+##### `Ports sortants`
+
+Les ports sortants décrivent les ressources techniques dont l’application a besoin :
+
+```ts
+export interface ICommandeRepository {
+  save(commande: Commande): Promise<void>;
+  findById(id: CommandeId): Promise<Commande | null>;
+}
+```
+
+L’application connaît cette interface, mais elle ne connaît pas son implémentation technique.
+
+##### `adapters/in`
+
+Les adaptateurs entrants permettent à un élément extérieur d’appeler l’application.
+
+Exemples :
+
+* contrôleur HTTP ;
+* commande CLI ;
+* consommateur de messages ;
+* tâche planifiée ;
+* interface graphique.
+
+```ts
+export class CommandeController {
+  constructor(
+    private readonly createCommande: ICreateCommande,
+  ) {}
+
+  async create(request: CreateCommandeRequest) {
+    return this.createCommande.execute({
+      clientId: request.clientId,
+      produitId: request.produitId,
+      quantite: request.quantite,
+    });
+  }
+}
+```
+
+Le contrôleur connaît le port entrant, mais il ne contient pas les règles métier.
+
+##### `adapters/out`
+
+Les adaptateurs sortants implémentent les ports sortants définis par l’application.
+
+```ts
+export class PrismaCommandeRepository
+  implements ICommandeRepository
+{
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async save(commande: Commande): Promise<void> {
+    await this.prisma.commande.create({
+      data: CommandePersistenceMapper.toPersistence(commande),
+    });
+  }
+
+  async findById(id: CommandeId): Promise<Commande | null> {
+    const data = await this.prisma.commande.findUnique({
+      where: { id: id.value },
+    });
+
+    return data
+      ? CommandePersistenceMapper.toDomain(data)
+      : null;
+  }
+}
+```
+
+Cet adaptateur peut être remplacé sans modifier le domaine ou le cas d’utilisation :
+
+```text
+ICommandeRepository
+        ▲
+        │ implémente
+        │
+        ├── PrismaCommandeRepository
+        ├── MongoCommandeRepository
+        └── FakeCommandeRepository
+```
+
+##### `Adaptateur fake pour les tests`
+
+```ts
+export class FakeCommandeRepository
+  implements ICommandeRepository
+{
+  private readonly commandes = new Map<string, Commande>();
+
+  async save(commande: Commande): Promise<void> {
+    this.commandes.set(commande.id.value, commande);
+  }
+
+  async findById(id: CommandeId): Promise<Commande | null> {
+    return this.commandes.get(id.value) ?? null;
+  }
+}
+```
+
+Le cas d’utilisation peut alors être testé sans Prisma ni base de données :
+
+```ts
+describe("CreateCommande", () => {
+  it("crée et enregistre une commande", async () => {
+    const repository = new FakeCommandeRepository();
+    const produits = new FakeProduitProvider();
+
+    const useCase = new CreateCommande(repository, produits);
+
+    const result = await useCase.execute({
+      clientId: "client-1",
+      produitId: "produit-1",
+      quantite: 2,
+    });
+
+    const commande = await repository.findById(
+      new CommandeId(result.id),
+    );
+
+    expect(commande).not.toBeNull();
+  });
+});
+```
+
+## Variante plus simple
+
+Pour une application de taille modeste, les ports entrants peuvent être omis. Les cas d’utilisation jouent alors directement le rôle de ports entrants :
+
+```text
+commande/
+├── domain/
+│   ├── Commande.ts
+│   └── LigneCommande.ts
+│
+├── application/
+│   ├── use-cases/
+│   │   └── CreateCommande.ts
+│   └── ports/
+│       └── ICommandeRepository.ts
+│
+└── infrastructure/
+    ├── http/
+    │   └── CommandeController.ts
+    └── persistence/
+        └── PrismaCommandeRepository.ts
+```
+
+Cette variante évite de créer une interface pour chaque cas d’utilisation lorsque cela n’apporte aucun bénéfice concret.
 
 
