@@ -15,8 +15,8 @@ On part du métier, puis on passe au modèle, pour finir avec le code (en utilis
 * **Les design patterns** sont des solutions de conception réutilisables pour répondre à des problèmes fréquents d’architecture ou d’organisation du code. Ils ne sont pas du code prêt à copier, mais plutôt des modèles de solution qui aident à structurer le logiciel de façon plus claire, maintenable et évolutive.
 * **Conception en cascade** : méthode de projet séquentielle où l’on avance étape par étape — analyse, conception, développement, test, livraison — avec peu de retours en arrière.
 * **Développement agile** : méthode itérative où l’on construit le produit progressivement, par cycles courts, en intégrant régulièrement les retours utilisateurs.
-* Un **use case **représente un cas d’utilisation concret de l’application, c’est-à-dire une action que le système doit permettre de réaliser pour répondre à un besoin utilisateur ou métier. _Exemple : créer une intervention, clôturer une intervention, générer une facture ou envoyer un rappel._
-* 
+* Un **use case** représente un cas d’utilisation concret de l’application, c’est-à-dire une action que le système doit permettre de réaliser pour répondre à un besoin utilisateur ou métier. _Exemple : créer une intervention, clôturer une intervention, générer une facture ou envoyer un rappel._
+
 ### Bâtir la connaissance du domaine
 
 * Échanger avec les utilisateurs métier : comprendre leur quotidien, leurs problèmes, leurs règles et leur vocabulaire.
