@@ -65,7 +65,7 @@ Une solution architecturale courante pour les conceptions dirigées par le domai
 contient quatre couches conceptuelles :
 
 * **Couche de présentation** (interface utilisateur) : présentation de l'information à l'utilisateur / interprétation des commandes utilisateurs
-* **Couche application **: coordonne l'activité de l 'application (ne contient pas de logique métier, ne recèle pas l’étatdes objets métier, mais  peut détenir l’état de la progression d’une tâche applicative)
+* **Couche application**: coordonne l'activité de l 'application (ne contient pas de logique métier, ne recèle pas l’étatdes objets métier, mais  peut détenir l’état de la progression d’une tâche applicative)
 * **Couche domaine** : contient les informations sur le domaine, coeur du logiciel métier
 * **Couche infrastructure** : agit comme une bibliothèque de soutien pour les autres couches : communication entre les couches, persistance des objets métiers, bibliothèque auxiliaires de la couche de présentation, ...
 
