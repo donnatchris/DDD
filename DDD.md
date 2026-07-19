@@ -173,6 +173,40 @@ _Par exemple, dans une application de reporting, l’utilisateur choisit un rapp
 
 En résumé, un Service de domaine sert à placer une logique métier importante au bon endroit, quand cette logique ne correspond pas naturellement à la responsabilité d’une Entité ou d’un Objet-Valeur.
 
+```ts
+class Compte {
+  constructor(public solde: number) {}
+
+  debiter(montant: number): void {
+    if (montant > this.solde) {
+      throw new Error("Solde insuffisant");
+    }
+
+    this.solde -= montant;
+  }
+
+  crediter(montant: number): void {
+    this.solde += montant;
+  }
+}
+
+class ServiceDeTransfert {
+  transferer(source: Compte, destination: Compte, montant: number): void {
+    source.debiter(montant);
+    destination.crediter(montant);
+  }
+}
+```
+```ts
+const compteA = new Compte(100);
+const compteB = new Compte(20);
+
+const transfert = new ServiceDeTransfert();
+transfert.transferer(compteA, compteB, 30);
+
+// ServiceDeTransfert est un service de domaine, car le transfert implique deux entités Compte et n’appartient naturellement à aucune des deux.
+```
+
 ### Les Modules
 
 > En DDD, les **modules** servent à organiser un modèle métier devenu trop grand ou trop complexe.
