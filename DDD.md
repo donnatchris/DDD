@@ -288,6 +288,44 @@ Dans une application complexe, les objets du domaine peuvent avoir beaucoup de r
 
 L’objectif des agrégats est donc de simplifier ces relations et de protéger les règles métier importantes.
 
+_Exemple avec `Client` qui est la **racine d’agrégat**. L’extérieur ne modifie pas directement la liste des adresses : il passe toujours par les méthodes de `Client`._
+```ts
+class Adresse {
+  constructor(
+    public readonly rue: string,
+    public readonly ville: string,
+  ) {}
+}
+
+class Client {
+  private adresses: Adresse[] = [];
+
+  constructor(
+    public readonly id: string,
+    public nom: string,
+  ) {}
+
+  ajouterAdresse(adresse: Adresse): void {
+    this.adresses.push(adresse);
+  }
+
+  changerAdressePrincipale(adresse: Adresse): void {
+    this.adresses = [adresse, ...this.adresses];
+  }
+
+  getAdresses(): readonly Adresse[] {
+    return this.adresses;
+  }
+}
+```
+```ts
+const client = new Client("client-1", "Alice");
+
+client.ajouterAdresse(
+  new Adresse("10 rue des Fleurs", "Perpignan"),
+);
+```
+
 #### La Racine d'Agrégat
 
 Un agrégat possède une **racine**, appelée **racine d’agrégat**. Cette racine est une Entité, et c’est le seul objet accessible depuis l’extérieur. Les objets internes de l’agrégat ne doivent pas être modifiés directement par le reste de l’application.
