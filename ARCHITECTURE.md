@@ -28,6 +28,7 @@ On distingue généralement **deux grandes formes de complexité** en architectu
 * **La complexité accidentelle** : C’est la complexité ajoutée par **nos choix techniques ou une mauvaise conception**
 
 **La complexité esentielle** existe même avec une excellente architecture, car elle vient des règles du domaine. Par exemple :
+
 _* calculer une paie ;
 * gérer les droits d’accès ;
 * organiser un processus de recrutement ;
